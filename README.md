@@ -2,6 +2,10 @@
 
 Rename items without the usual client-side limitations because I am seeing people buy items like this for stupid prices when they are just worth 1.99 USD.
 
+## Why? How? What?
+
+Just watch this video: https://www.youtube.com/watch?v=ekPZvM6v764
+
 ## Usage
 
 1. Download [NodeJS](https://nodejs.org/) and install/update it
