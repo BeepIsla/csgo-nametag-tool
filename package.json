@@ -1,0 +1,20 @@
+{
+  "name": "csgo-nametag",
+  "version": "1.0.0",
+  "description": "Custom name tags without the client limitations",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "BeepIsla",
+  "license": "MIT",
+  "dependencies": {
+    "got": "^11.8.2",
+    "inquirer": "^8.2.0",
+    "protobufjs": "^6.11.2",
+    "steam-user": "^4.20.1",
+    "vdf-parser": "^1.2.0"
+  }
+}
