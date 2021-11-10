@@ -6,6 +6,8 @@ Rename items without the usual client-side limitations because I am seeing peopl
 
 Just watch this video: https://www.youtube.com/watch?v=ekPZvM6v764
 
+Its a random guy talking about it to ohnePixel, I thought it was dumb and nothing special so made this.
+
 ## Usage
 
 1. Download [NodeJS](https://nodejs.org/) and install/update it
