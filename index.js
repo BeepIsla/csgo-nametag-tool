@@ -14,6 +14,7 @@ const protobufs = new ProtobufJS.Root().loadSync([
 	keepCase: true
 });
 const items = new Items();
+const INVENTORY_LINK_REGEX = /730_2_(?<itemID>\d+)/i;
 let loginPersonaCheck = false;
 let gcConnectInterval = null;
 let gcFirstConnect = true;
@@ -267,25 +268,25 @@ async function getUserRenameInput(haveNameTags) {
 			transformer: (input, answers, flags) => {
 				if (flags.isFinal) {
 					if (typeof input === "string") {
-						let match = input.match(/\/inventory\/#730_2_(?<itemID>\d+)/i);
+						let match = input.match(INVENTORY_LINK_REGEX);
 						if (match) {
 							return BigInt(match.groups.itemID);
 						}
 					}
-	
+
 					return "";
 				}
-	
+
 				return input;
 			},
 			validate: (input, answers) => {
 				if (typeof input === "string") {
-					let match = input.match(/\/inventory\/#730_2_(?<itemID>\d+)/i);
+					let match = input.match(INVENTORY_LINK_REGEX);
 					if (match) {
 						return true;
 					}
 				}
-	
+
 				return "You must copy paste the full Steam inventory item link";
 			}
 		},
@@ -302,11 +303,11 @@ async function getUserRenameInput(haveNameTags) {
 				if (a.name < b.name) {
 					return -1;
 				}
-	
+
 				if (a.name > b.name) {
 					return 1;
 				}
-	
+
 				return 0;
 			}),
 			when: (answers) => {
@@ -335,7 +336,7 @@ async function getUserRenameInput(haveNameTags) {
 		doItemRename(parseInt(itemSelection.defIndex));
 	} else if (itemSelection.itemLink) {
 		// We are renaming an item with a name tag or renaming a storage unit
-		let match = itemSelection.itemLink.match(/\/inventory\/#730_2_(?<itemID>\d+)/i);
+		let match = itemSelection.itemLink.match(INVENTORY_LINK_REGEX);
 		let itemID = BigInt(match.groups.itemID);
 
 		// If we have no name tags then this must be a storage unit
