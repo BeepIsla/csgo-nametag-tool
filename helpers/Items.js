@@ -93,8 +93,8 @@ export class Items {
 			return undefined;
 		}
 
-		return this._items.find((item) => {
+		return BigInt(this._items.find((item) => {
 			return item.def_index === 1200;
-		})?.id.toString();
+		})?.id.toString());
 	}
 }
