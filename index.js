@@ -237,7 +237,7 @@ gcListeners.add("EGCBaseClientMsg.k_EMsgGCClientWelcome", "CMsgClientWelcome", a
 		return;
 	}
 
-	getUserRenameInput(nameTags.length <= 0);
+	getUserRenameInput(nameTags.length > 0);
 });
 
 async function getUserRenameInput(haveNameTags) {
