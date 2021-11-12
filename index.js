@@ -250,7 +250,7 @@ async function getUserRenameInput(haveNameTags) {
 				{
 					name: "Default Item",
 					value: "default",
-					disabled: haveNameTags
+					disabled: !haveNameTags
 				},
 				{
 					name: "Normal Item",
