@@ -28,16 +28,34 @@ When you start the program you can choose two options:
 - `Normal Item`: Any item you can see in your [Steam Inventory](https://steamcommunity.com/my/inventory/) (Requires a name tag unless its a [Storage Unit](https://counterstrike.fandom.com/wiki/Storage_Unit))
   - When entering the Steam inventory link for the item you want to rename go to [your Steam inventory]([https://steam](https://steamcommunity.com/my/inventory/)), find the item you want to rename, then right click -> Copy link address. You should now have a link similar to this: `/inventory/#730_2_4287161377`
 
-The CSGO backend might still restrict some input, for example newline characters get turned into space characters automatically and there is a hard limit for the amount of characters you can use: Always test with a [Storage Unit](https://counterstrike.fandom.com/wiki/Storage_Unit) first.
+If you wish to rename your items with special characters I recommend you use the `File` input method. When using the `File` input method a new file will be created called `new_name.txt`, open it in a text editor and write what you want. When you are done save it and press Enter in the console.
 
-If you wish to rename your items with special characters I recommend you use the raw hex system. Simply convert [any text you want](https://www.rapidtables.com/convert/number/ascii-to-hex.html) into hexadecimal and prefix it with `0x`.
+Note: When using the `File` input method some things are automatically removed or replaced. The `\r` character gets entirely deleted. All `\n` (New line characters) get replaced with whatever this means `E2 80 A9` but it has the same effect as `\n`.
 
 For example entering this:
 
 ```
-0xE280A9E280A9E280A9E280A9E280A9E280A9E280A9E280A9E280A9E282BF20E29B8FE280A9E280A9E280A9E280A9E280A9E280A9E280A9E280A9E280A9
+
+
+
+
+
+
+
+
+
+₿ ⛏
+
+
+
+
+
+
+
+
+
 ```
 
-Results in [this](https://i.imgur.com/A7Hs67c.png):
+Results in this:
 
 ![](https://i.imgur.com/A7Hs67c.png)

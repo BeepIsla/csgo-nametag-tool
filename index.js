@@ -2,6 +2,7 @@ import * as path from "path";
 import SteamUser from "steam-user";
 import inquirer from "inquirer";
 import ProtobufJS from "protobufjs";
+import * as fs from "fs";
 import { Items, defaultItems, english } from "./helpers/Items.js";
 
 const steam = new SteamUser();
@@ -255,6 +256,10 @@ async function getUserRenameInput(haveNameTags) {
 				{
 					name: "Normal Item",
 					value: "normal"
+				},
+				{
+					name: "Log out and exit program",
+					value: "quit"
 				}
 			]
 		},
@@ -315,6 +320,10 @@ async function getUserRenameInput(haveNameTags) {
 			}
 		}
 	]);
+	if (itemSelection.type === "quit") {
+		steam.logOff();
+		return;
+	}
 
 	if (itemSelection.defIndex) {
 		if (!haveNameTags) {
@@ -391,41 +400,93 @@ m_bDescription           (bool)   - 0                    [If the tool is a descr
  * @param {BigInt | Number} targetItemID
  */
 async function doItemRename(targetItemID) {
-	let result = await inquirer.prompt([
+	let input = await inquirer.prompt([
 		{
-			type: "input",
-			name: "name",
-			message: "Enter the new name of this item (Prefix with 0x to enter raw hexadecimal buffer)",
-			validate: (input, answers) => {
-				if (typeof input === "string" && input.length > 0) {
-					return true;
-				}
-
-				return "You must enter a valid name";
-			}
+			type: "list",
+			name: "method",
+			message: "Select input method",
+			choices: [
+				"Text",
+				"File"
+			]
 		}
 	]);
+	switch (input.method) {
+		case "Text": {
+			let result = await inquirer.prompt([
+				{
+					type: "input",
+					name: "name",
+					message: "Enter the new name of this item",
+					validate: (input, answers) => {
+						if (typeof input === "string" && input.length > 0) {
+							return true;
+						}
+		
+						return "You must enter a valid name";
+					}
+				}
+			]);
+			console.log(`Attempting to rename item to: ${result.name}`);
+			sendItemRename(items.isItemStorageUnit(targetItemID) ? 0n : items.getNameTagID(), targetItemID, result.name);
+			break;
+		}
+		case "File": {
+			fs.writeFileSync("new_name.txt", "");
+			await inquirer.prompt([
+				{
+					type: "input",
+					name: "confirm",
+					message: "Please edit the file called 'new_name.txt', when done save it and press enter",
+					transformer: () => ""
+				}
+			]);
 
-	let name = result.name;
-	if (name.startsWith("0x")) {
-		try {
-			name = Buffer.from(name.slice(2).replace(/ /g, ""), "hex").toString("utf8");
-		} catch (err) {
-			console.error("Invalid hex input: " + (err.message || err.toString()));
-			doItemRename(targetItemID);
-			return;
+			if (!fs.existsSync("new_name.txt")) {
+				console.log(`Missing new_name.txt, did you delete it?`);
+
+				gcConnectInterval = setInterval(() => {
+					sendGCMessage("EGCBaseClientMsg.k_EMsgGCClientHello", "CMsgClientHello", {}, {});
+				}, 1000).unref();
+				break;
+			}
+
+			let name = fs.readFileSync("new_name.txt");
+			fs.unlinkSync("new_name.txt");
+			console.log(`Attempting to rename item to: ${name}`);
+
+			// Replace new lines with this special thing and Windows weirdness with nothing
+			name = replaceBuffer(name, Buffer.from("0A", "hex"), Buffer.from("E280A9", "hex"));
+			name = replaceBuffer(name, Buffer.from("0D", "hex"), Buffer.alloc(0));
+			sendItemRename(items.isItemStorageUnit(targetItemID) ? 0n : items.getNameTagID(), targetItemID, name);
+			break;
+		}
+		default: {
+			console.log(`Invalid selection: ${result}`);
+
+			gcConnectInterval = setInterval(() => {
+				sendGCMessage("EGCBaseClientMsg.k_EMsgGCClientHello", "CMsgClientHello", {}, {});
+			}, 1000).unref();
+			break;
 		}
 	}
-	sendItemRename(items.isItemStorageUnit(targetItemID) ? 0n : items.getNameTagID(), targetItemID, name);
 }
 
 /**
  * @param {BigInt} nameTagID
  * @param {BigInt | Number} targetItemID If `BigInt` its a normal item, if `Number` its a default item
- * @param {String} newName
+ * @param {String | Buffer} newName
  */
 function sendItemRename(nameTagID, targetItemID, newName) {
-	newName = Buffer.from(newName, "utf8");
+	if (!Buffer.isBuffer(newName)) {
+		newName = Buffer.from(newName, "utf8");
+	}
+
+	// This depends on the UTF8 characters not on the amount of bytes!
+	let utf8Name = newName.toString("utf8");
+	if (utf8Name.length > 21) {
+		console.log(`WARNING: Your name might be too long! ${utf8Name.length}/21`);
+	}
 
 	let offset = 0;
 	let buf = Buffer.alloc(8 + (typeof targetItemID === "number" ? 4 : 8) + 1 + (newName.length + 1));
@@ -450,6 +511,28 @@ function sendItemRename(nameTagID, targetItemID, newName) {
 	gcConnectInterval = setInterval(() => {
 		sendGCMessage("EGCBaseClientMsg.k_EMsgGCClientHello", "CMsgClientHello", {}, {});
 	}, 1000).unref();
+}
+
+/**
+ * @param {Buffer} buf
+ * @param {Buffer} search
+ * @param {Buffer} replace
+ * @returns {Buffer}
+ */
+function replaceBuffer(buf, search, replace) {
+	let i = 0;
+	while (true) {
+		i = buf.indexOf(search, i);
+		if (i >= 0) {
+			let start = buf.subarray(0, i);
+			let end = buf.subarray(i + search.length);
+			buf = Buffer.concat([start, replace, end]);
+			i += replace.length;
+		} else {
+			break;
+		}
+	}
+	return buf;
 }
 
 process.once("SIGINT", () => {
