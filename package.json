@@ -11,7 +11,6 @@
   "author": "BeepIsla",
   "license": "MIT",
   "dependencies": {
-    "got": "^11.8.2",
     "inquirer": "^8.2.0",
     "protobufjs": "^6.11.2",
     "steam-user": "^4.20.1",

@@ -10,7 +10,7 @@ Its a random guy talking about it to ohnePixel, I thought it was dumb and nothin
 
 ## Usage
 
-1. Download [NodeJS](https://nodejs.org/) and install/update it
+1. Download [NodeJS](https://nodejs.org/) and install/update it (**Version 18.0.0 or higher**)
 2. Download [Git](https://git-scm.com/) and install it
 3. Open a command prompt and enter `git clone https://github.com/BeepIsla/csgo-nametag-tool.git --recursive`
 4. Enter the just downloaded folder using `cd csgo-nametag-tool`
