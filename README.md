@@ -58,4 +58,6 @@ For example entering this:
 
 Results in this:
 
-![](https://i.imgur.com/A7Hs67c.png)
+![](https://i.imgur.com/FV4ylYa.png)
+
+![](https://i.imgur.com/lzMRXLF.png)
