@@ -1,8 +1,8 @@
 import * as VDF from "vdf-parser";
 
-let itemsGame = VDF.parse(await fetch("https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/master/csgo/scripts/items/items_game.txt").then(r => r.text())).items_game;
+let itemsGame = VDF.parse(await fetch("https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/e63fc7fdb8dfb4f1873f0db214c0cc16613d5beb/csgo/scripts/items/items_game.txt").then(r => r.text())).items_game;
 let english = {
-	_raw_tokens_: VDF.parse(await fetch("https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/master/csgo/resource/csgo_english.txt").then(r => r.text())).lang.Tokens,
+	_raw_tokens_: VDF.parse(await fetch("https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/e63fc7fdb8dfb4f1873f0db214c0cc16613d5beb/csgo/resource/csgo_english.txt").then(r => r.text())).lang.Tokens,
 	get: function (key) {
 		let internalKey = key;
 		if (internalKey.startsWith("#")) {
