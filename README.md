@@ -15,8 +15,11 @@ Its a random guy talking about it to ohnePixel, I thought it was dumb and nothin
 3. Open a command prompt and enter `git clone https://github.com/BeepIsla/csgo-nametag-tool.git --recursive`
 4. Enter the just downloaded folder using `cd csgo-nametag-tool`
 5. Download the required dependencies using `npm ci`
-6. Run the program using `node index.js`
-7. Follow the on-screen instructions
+6. **Close CS and close Steam**
+7. Run the program using `node index.js`
+8. Follow the on-screen instructions
+9. Start Steam/CS again and enjoy your new name tag
+     - You can use the Steam inventory on your web browser to check if it worked without constantly starting and stopping Steam.
 
 ## Details
 
