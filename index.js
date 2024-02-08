@@ -78,6 +78,24 @@ if (!password && process.argv.length > 3) {
 	throw new Error("You did not enter a valid password");
 }
 
+async function sendGCHello() {
+	const text = await fetch("https://raw.githubusercontent.com/SteamDatabase/GameTracking-CS2/master/game/csgo/steam.inf").then(r => r.text());
+	const lines = text.split("\n").map(l => l.replace(/\r/g, "").trim());
+	const idx = lines.findIndex(l => l.startsWith("ClientVersion="));
+	let version = undefined;
+	if (idx >= 0) {
+		const versionStr = lines[idx].split("=").pop();
+		version = parseInt(versionStr);
+		if (isNaN(version)) {
+			console.log(`Warning: Failed to parse required client version from steam.inf`);
+			version = undefined;
+		}
+	}
+	sendGCMessage("EGCBaseClientMsg.k_EMsgGCClientHello", "CMsgClientHello", {}, {
+		version: version
+	});
+}
+
 console.log("Logging into Steam...");
 steam.logOn({
 	accountName: username,
@@ -112,9 +130,7 @@ steam.on("user", (sid, user) => {
 
 	steam.gamesPlayed([730]);
 	clearInterval(gcConnectInterval);
-	gcConnectInterval = setInterval(() => {
-		sendGCMessage("EGCBaseClientMsg.k_EMsgGCClientHello", "CMsgClientHello", {}, {});
-	}, 1000).unref();
+	gcConnectInterval = setInterval(sendGCHello, 1000).unref();
 });
 
 steam.on("playingState", (blocked, playingApp) => {
@@ -330,23 +346,7 @@ async function getUserRenameInput(haveNameTags) {
 			console.log("You have no name tags, you can only rename storage units");
 
 			// We do it the lazy way and just request our inventory again
-			gcConnectInterval = setInterval(async () => {
-				const text = await fetch("https://raw.githubusercontent.com/SteamDatabase/GameTracking-CS2/master/game/csgo/steam.inf").then(r => r.text());
-				const lines = text.split("\n").map(l => l.replace(/\r/g, "").trim());
-				const idx = lines.findIndex(l => l.startsWith("ClientVersion="));
-				let version = undefined;
-				if (idx >= 0) {
-					const versionStr = lines[idx].split("=").pop();
-					version = parseInt(versionStr);
-					if (isNaN(version)) {
-						console.log(`Warning: Failed to parse required client version from steam.inf`);
-						version = undefined;
-					}
-				}
-				sendGCMessage("EGCBaseClientMsg.k_EMsgGCClientHello", "CMsgClientHello", {}, {
-					version: version
-				});
-			}, 1000).unref();
+			gcConnectInterval = setInterval(sendGCHello, 1000).unref();
 			return;
 		}
 
@@ -367,9 +367,7 @@ async function getUserRenameInput(haveNameTags) {
 			console.log("You have no name tags, you can only rename storage units");
 
 			// We do it the lazy way and just request our inventory again
-			gcConnectInterval = setInterval(() => {
-				sendGCMessage("EGCBaseClientMsg.k_EMsgGCClientHello", "CMsgClientHello", {}, {});
-			}, 1000).unref();
+			gcConnectInterval = setInterval(sendGCHello, 1000).unref();
 			return;
 		}
 
@@ -459,9 +457,7 @@ async function doItemRename(targetItemID) {
 			if (!fs.existsSync("new_name.txt")) {
 				console.log(`Missing new_name.txt, did you delete it?`);
 
-				gcConnectInterval = setInterval(() => {
-					sendGCMessage("EGCBaseClientMsg.k_EMsgGCClientHello", "CMsgClientHello", {}, {});
-				}, 1000).unref();
+				gcConnectInterval = setInterval(sendGCHello, 1000).unref();
 				break;
 			}
 
@@ -478,9 +474,7 @@ async function doItemRename(targetItemID) {
 		default: {
 			console.log(`Invalid selection: ${result}`);
 
-			gcConnectInterval = setInterval(() => {
-				sendGCMessage("EGCBaseClientMsg.k_EMsgGCClientHello", "CMsgClientHello", {}, {});
-			}, 1000).unref();
+			gcConnectInterval = setInterval(sendGCHello, 1000).unref();
 			break;
 		}
 	}
@@ -522,9 +516,7 @@ function sendItemRename(nameTagID, targetItemID, newName) {
 	sendGCMessage(`EGCItemMsg.${typeof targetItemID === "number" ? "k_EMsgGCNameBaseItem" : "k_EMsgGCNameItem"}`, null, null, buf);
 
 	// We do it the lazy way and just request our inventory again
-	gcConnectInterval = setInterval(() => {
-		sendGCMessage("EGCBaseClientMsg.k_EMsgGCClientHello", "CMsgClientHello", {}, {});
-	}, 1000).unref();
+	gcConnectInterval = setInterval(sendGCHello, 1000).unref();
 }
 
 /**
