@@ -330,8 +330,22 @@ async function getUserRenameInput(haveNameTags) {
 			console.log("You have no name tags, you can only rename storage units");
 
 			// We do it the lazy way and just request our inventory again
-			gcConnectInterval = setInterval(() => {
-				sendGCMessage("EGCBaseClientMsg.k_EMsgGCClientHello", "CMsgClientHello", {}, {});
+			gcConnectInterval = setInterval(async () => {
+				const text = await fetch("https://raw.githubusercontent.com/SteamDatabase/GameTracking-CS2/master/game/csgo/steam.inf").then(r => r.text());
+				const lines = text.split("\n").map(l => l.replace(/\r/g, "").trim());
+				const idx = lines.findIndex(l => l.startsWith("ClientVersion="));
+				let version = undefined;
+				if (idx >= 0) {
+					const versionStr = lines[idx].split("=").pop();
+					version = parseInt(versionStr);
+					if (isNaN(version)) {
+						console.log(`Warning: Failed to parse required client version from steam.inf`);
+						version = undefined;
+					}
+				}
+				sendGCMessage("EGCBaseClientMsg.k_EMsgGCClientHello", "CMsgClientHello", {}, {
+					version: version
+				});
 			}, 1000).unref();
 			return;
 		}
