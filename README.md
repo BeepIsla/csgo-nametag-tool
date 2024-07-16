@@ -1,4 +1,4 @@
-# CSGO Name Tag Tool
+# CS2 Name Tag Tool
 
 Rename items without the usual client-side limitations because I am seeing people buy items like this for stupid prices when they are just worth 1.99 USD.
 

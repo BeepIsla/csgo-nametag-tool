@@ -127,7 +127,7 @@ steam.on("user", (sid, user) => {
 		return;
 	}
 
-	console.log("Connecting to CSGO backend...");
+	console.log("Connecting to CS2 backend...");
 
 	steam.gamesPlayed([730]);
 	clearInterval(gcConnectInterval);
@@ -219,7 +219,7 @@ gcListeners.add("EGCBaseClientMsg.k_EMsgGCClientWelcome", "CMsgClientWelcome", a
 	gcConnectInterval = null;
 
 	if (gcFirstConnect) {
-		console.log(`Connected to CSGO backend, server time: ${new Date(data.rtime32_gc_welcome_timestamp * 1000).toLocaleString()}`);
+		console.log(`Connected to CS2 backend, server time: ${new Date(data.rtime32_gc_welcome_timestamp * 1000).toLocaleString()}`);
 		gcFirstConnect = false;
 	}
 
@@ -355,7 +355,7 @@ async function getUserRenameInput(haveNameTags) {
 		console.log("WARNING: Continuing will result in one of your name tags being used up!");
 		console.log("WARNING: If you do not wish to do this stop NOW by pressing CTRL + C or closing the window!");
 		console.log("WARNING: The developer(s) of this tool are NOT responsible for any lost name tags, items, or money!");
-		console.log("WARNING: CSGO's backend might restrict you from entering certain things or go above certain limits this tool cannot account for!");
+		console.log("WARNING: The CS2 backend might restrict you from entering certain things or go above certain limits this tool cannot account for!");
 		console.log("WARNING: Always test on a Storage Unit first, they have infinite free name changes!");
 		doItemRename(parseInt(itemSelection.defIndex));
 	} else if (itemSelection.itemLink) {
@@ -377,7 +377,7 @@ async function getUserRenameInput(haveNameTags) {
 			console.log("WARNING: Continuing will result in one of your name tags being used up!");
 			console.log("WARNING: If you do not wish to do this stop NOW by pressing CTRL + C or closing the window!");
 			console.log("WARNING: The developer(s) of this tool are NOT responsible for any lost name tags, items, or money!");
-			console.log("WARNING: CSGO's backend might restrict you from entering certain things or go above certain limits this tool cannot account for!");
+			console.log("WARNING: The CS2 backend might restrict you from entering certain things or go above certain limits this tool cannot account for!");
 			console.log("WARNING: Always test on a Storage Unit first, they have infinite free name changes!");
 		}
 		doItemRename(itemID);
