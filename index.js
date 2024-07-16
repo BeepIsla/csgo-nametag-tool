@@ -286,10 +286,10 @@ async function getUserRenameInput(haveNameTags) {
 			when: (answers) => {
 				return answers.type === "normal";
 			},
-			transformer: (input, answers, flags) => {
-				if (flags.isFinal) {
-					if (typeof input === "string") {
-						let match = input.match(INVENTORY_LINK_REGEX);
+			transformer: (value = '', { isFinal }) => {
+				if (isFinal) {
+					if (typeof value === "string") {
+						let match = value.match(INVENTORY_LINK_REGEX);
 						if (match) {
 							return BigInt(match.groups.itemID);
 						}
@@ -298,9 +298,9 @@ async function getUserRenameInput(haveNameTags) {
 					return "";
 				}
 
-				return input;
+				return value;
 			},
-			validate: (input, answers) => {
+			validate: (input) => {
 				if (typeof input === "string") {
 					let match = input.match(INVENTORY_LINK_REGEX);
 					if (match) {
