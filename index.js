@@ -99,7 +99,8 @@ async function sendGCHello() {
 console.log("Logging into Steam...");
 steam.logOn({
 	accountName: username,
-	password: password
+	password: password,
+	authCode: process.argv[4]
 });
 
 steam.on("loggedOn", async () => {
