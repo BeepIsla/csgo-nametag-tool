@@ -271,7 +271,7 @@ gcListeners.add("EGCBaseClientMsg.k_EMsgGCClientWelcome", "CMsgClientWelcome", a
 async function getUserRenameInput(haveNameTags) {
 	let itemSelection = await inquirer.prompt([
 		{
-			type: "list",
+			type: "select",
 			name: "type",
 			message: "Do you want to rename a default item or a normal item?",
 			choices: [
@@ -323,7 +323,7 @@ async function getUserRenameInput(haveNameTags) {
 			}
 		},
 		{
-			type: "list",
+			type: "select",
 			name: "defIndex",
 			message: "Select the default weapon you want to rename",
 			choices: defaultItems.map((item) => {
@@ -425,7 +425,7 @@ m_bDescription           (bool)   - 0                    [If the tool is a descr
 async function doItemRename(targetItemID) {
 	let input = await inquirer.prompt([
 		{
-			type: "list",
+			type: "select",
 			name: "method",
 			message: "Select input method",
 			choices: [
