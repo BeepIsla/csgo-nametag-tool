@@ -11,9 +11,9 @@
   "author": "BeepIsla",
   "license": "MIT",
   "dependencies": {
-    "inquirer": "^10.0.1",
-    "protobufjs": "7.2.4",
-    "steam-user": "^5.0.10",
+    "inquirer": "^13.4.2",
+    "protobufjs": "^8.0.1",
+    "steam-user": "^5.3.0",
     "vdf-parser": "^1.2.0"
   }
 }

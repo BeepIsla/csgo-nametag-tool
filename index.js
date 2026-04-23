@@ -6,7 +6,16 @@ import * as fs from "fs";
 import { Items, defaultItems, english } from "./helpers/Items.js";
 
 const steam = new SteamUser();
-const protobufs = new ProtobufJS.Root().loadSync([
+const protobufs = new ProtobufJS.Root();
+protobufs.resolvePath = (origin, target) => {
+	// ProtobufJS by default loads files relative to the current file directory
+	// However for google/protobuf/*.proto files We want it relative to "./protobufs"
+	if (target.startsWith("google/protobuf")) {
+		return path.join(import.meta.dirname, "protobufs", target);
+	}
+   return ProtobufJS.util.path.resolve(origin, target);
+};
+protobufs.loadSync([
 	path.join(process.cwd(), "protobufs", "csgo", "base_gcmessages.proto"),
 	path.join(process.cwd(), "protobufs", "csgo", "gcsystemmsgs.proto"),
 	path.join(process.cwd(), "protobufs", "csgo", "gcsdk_gcmessages.proto"),
@@ -14,6 +23,7 @@ const protobufs = new ProtobufJS.Root().loadSync([
 ], {
 	keepCase: true
 });
+
 const items = new Items();
 const INVENTORY_LINK_REGEX = /730_2_(?<itemID>\d+)/i;
 let loginPersonaCheck = false;
