@@ -7,22 +7,17 @@ import { Items, defaultItems, english } from "./helpers/Items.js";
 
 const steam = new SteamUser();
 const protobufs = new ProtobufJS.Root();
-protobufs.resolvePath = (origin, target) => {
-	// ProtobufJS by default loads files relative to the current file directory
-	// However for google/protobuf/*.proto files We want it relative to "./protobufs"
-	if (target.startsWith("google/protobuf")) {
-		return path.join(import.meta.dirname, "protobufs", target);
-	}
-   return ProtobufJS.util.path.resolve(origin, target);
-};
 protobufs.loadSync([
+	path.join(process.cwd(), "protobufs", "csgo", "steammessages.proto"),
 	path.join(process.cwd(), "protobufs", "csgo", "base_gcmessages.proto"),
 	path.join(process.cwd(), "protobufs", "csgo", "gcsystemmsgs.proto"),
 	path.join(process.cwd(), "protobufs", "csgo", "gcsdk_gcmessages.proto"),
-	path.join(process.cwd(), "protobufs", "csgo", "econ_gcmessages.proto")
+	path.join(process.cwd(), "protobufs", "csgo", "econ_gcmessages.proto"),
+	path.join(process.cwd(), "protobufs", "csgo", "cstrike15_gcmessages.proto")
 ], {
 	keepCase: true
 });
+Items.CAttribute_String = protobufs.lookupType("CAttribute_String");
 
 const items = new Items();
 const INVENTORY_LINK_REGEX = /730_2_(?<itemID>\d+)/i;
@@ -255,14 +250,24 @@ gcListeners.add("EGCBaseClientMsg.k_EMsgGCClientWelcome", "CMsgClientWelcome", a
 		return;
 	}
 
-	let nameTags = items._items.filter(i => i.def_index === 1200);
-	let storageUnits = items._items.filter(i => i.def_index === 1201);
+	let nameTags = items._items.filter(i => items.isNameTag(i.id));
+	let storageUnits = items._items.filter(i => items.isItemStorageUnit(i.id));
+	let pets = items._items.filter(i => items.isPet(i.id));
 	console.log(`We have ${nameTags.length} name tag${nameTags.length === 1 ? "" : "s"}`);
 	console.log(`We have ${storageUnits.length} storage unit${storageUnits.length === 1 ? "" : "s"}`);
-	if (nameTags.length <= 0 && storageUnits.length <= 0) {
-		console.log("You have no name tags or storage units, buy some first");
+	console.log(`We have ${pets.length} pet${pets.length === 1 ? "" : "s"}`);
+	if (nameTags.length <= 0 && storageUnits.length <= 0 && pets.length <= 0) {
+		console.log("You have no name tags, storage units, or pets, buy some first");
 		steam.logOff();
 		return;
+	}
+
+	// Pets don't appear anywhere useful, so list them here
+	if (pets.length > 0) {
+		console.log("Pet ID List:");
+		for (const pet of pets) {
+			console.log(`- ${items.getCustomName(pet.id) || "Unnamed Pet"}: ${pet.id}`);
+		}
 	}
 
 	getUserRenameInput(nameTags.length > 0);
@@ -374,8 +379,8 @@ async function getUserRenameInput(haveNameTags) {
 		let itemID = BigInt(match.groups.itemID);
 
 		// If we have no name tags then this must be a storage unit
-		if (!haveNameTags && !items.isItemStorageUnit(itemID)) {
-			console.log("You have no name tags, you can only rename storage units");
+		if (!haveNameTags && !items.canNameForFree(itemID)) {
+			console.log("You have no name tags, you can only rename storage units and name pets once");
 
 			// We do it the lazy way and just request our inventory again
 			gcConnectInterval = setInterval(sendGCHello, 1000).unref();
@@ -383,7 +388,14 @@ async function getUserRenameInput(haveNameTags) {
 		}
 
 		// This is either a storage unit or we have a name tag
-		if (!items.isItemStorageUnit(itemID)) {
+		if (items.isPet(itemID)) {
+			console.log("WARNING: Pets can only be named ONCE per growth stage!");
+			console.log("WARNING: If you do not wish to do this stop NOW by pressing CTRL + C or closing the window!");
+			console.log("WARNING: The developer(s) of this tool are NOT responsible for any lost name tags, items, or money!");
+			console.log("WARNING: The CS2 backend might restrict you from entering certain things or go above certain limits this tool cannot account for!");
+			console.log("WARNING: Always test on a Storage Unit first, they have infinite free name changes!");
+			console.log("WARNING: Pet names are rendered slightly differently to other items, it is not guaranteed that Storage Units and pets will look the same!");
+		} else if (!items.isItemStorageUnit(itemID)) {
 			console.log("WARNING: Continuing will result in one of your name tags being used up!");
 			console.log("WARNING: If you do not wish to do this stop NOW by pressing CTRL + C or closing the window!");
 			console.log("WARNING: The developer(s) of this tool are NOT responsible for any lost name tags, items, or money!");
@@ -393,31 +405,6 @@ async function getUserRenameInput(haveNameTags) {
 		doItemRename(itemID);
 	}
 }
-
-/* Renaming (First example taken by renaming a Storage Unit, second example filled in manually but not tested)
-
-The way renaming works for a item, using a non-protobuf message of ID 1006 (k_EMsgGCNameItem - MsgGCNameItem_t)
-Variable name     (Type)   - Example value        [Note]
-m_nHdrVersion     (uint16) - 1                    [Always 1]
-m_JobIDSource     (uint64) - 18446744073709551615 [Always k_GIDNil]
-m_JobIDTarget     (uint64) - 18446744073709551615 [Always k_GIDNil]
-// The above is part of the header, auto-filled for us by steam-user
-m_unToolItemID    (uint64) - 0                    [The tool item ID used to rename this item with, 0 for Storage Units]
-m_unSubjectItemID (uint64) - 17242456691          [The item we are changing]
-m_bDescription    (bool)   - 0                    [If the tool is a description tag or not, does not exist in CSGO at the current moment]
-*Extra data*      (string) - The actual name we are giving this item, null terminated
-
-The way renaming works for a default item, using a non-protobuf message of ID 1019 (k_EMsgGCNameBaseItem - MsgGCNameBaseItem_t)
-Variable name            (Type)   - Example value        [Note]
-m_nHdrVersion            (uint16) - 1                    [Always 1]
-m_JobIDSource            (uint64) - 18446744073709551615 [Always k_GIDNil]
-m_JobIDTarget            (uint64) - 18446744073709551615 [Always k_GIDNil]
-// The above is part of the header, auto-filled for us by steam-user
-m_unToolItemID           (uint64) - 17242421651          [The tool item ID used to rename this item with, 0 for Storage Units]
-m_unBaseItemDefinitionID (uint32) - 7                    [The item we are changing]
-m_bDescription           (bool)   - 0                    [If the tool is a description tag or not, does not exist in CSGO at the current moment]
-*Extra data*             (string) - The actual name we are giving this item, null terminated
-*/
 
 /**
  * @param {BigInt | Number} targetItemID
@@ -451,7 +438,7 @@ async function doItemRename(targetItemID) {
 				}
 			]);
 			console.log(`Attempting to rename item to: ${result.name}`);
-			sendItemRename(items.isItemStorageUnit(targetItemID) ? 0n : items.getNameTagID(), targetItemID, result.name);
+			sendItemRename(items.canNameForFree(targetItemID) ? 0n : items.getNameTagID(), targetItemID, result.name);
 			break;
 		}
 		case "File": {
@@ -479,7 +466,7 @@ async function doItemRename(targetItemID) {
 			// Replace new lines with this special thing and Windows weirdness with nothing
 			name = replaceBuffer(name, Buffer.from("0A", "hex"), Buffer.from("E280A9", "hex"));
 			name = replaceBuffer(name, Buffer.from("0D", "hex"), Buffer.alloc(0));
-			sendItemRename(items.isItemStorageUnit(targetItemID) ? 0n : items.getNameTagID(), targetItemID, name);
+			sendItemRename(items.canNameForFree(targetItemID) ? 0n : items.getNameTagID(), targetItemID, name);
 			break;
 		}
 		default: {
@@ -503,28 +490,15 @@ function sendItemRename(nameTagID, targetItemID, newName) {
 
 	// This depends on the UTF8 characters not on the amount of bytes!
 	let utf8Name = newName.toString("utf8");
-	if (utf8Name.length > 21) {
-		console.log(`WARNING: Your name might be too long! ${utf8Name.length}/21`);
+	if (utf8Name.length > 20) {
+		console.log(`WARNING: Your name might be too long! ${utf8Name.length}/20`);
 	}
 
-	let offset = 0;
-	let buf = Buffer.alloc(8 + (typeof targetItemID === "number" ? 4 : 8) + 1 + (newName.length + 1));
-	buf.writeBigUInt64LE(nameTagID, offset); offset += 8; // m_unToolItemID
-
-	if (typeof targetItemID === "number") {
-		buf.writeUInt32LE(targetItemID, offset); offset += 4; // m_unBaseItemDefinitionID
-	} else {
-		buf.writeBigUInt64LE(targetItemID, offset); offset += 8; // m_unSubjectItemID
-	}
-
-	buf.writeUInt8(0, offset); offset += 1; // m_bDescription
-
-	for (let i = 0; i < newName.length; i++) {
-		buf.writeUInt8(newName[i], offset); offset += 1;
-	}
-	buf.writeUInt8(0, offset); offset += 1;
-
-	sendGCMessage(`EGCItemMsg.${typeof targetItemID === "number" ? "k_EMsgGCNameBaseItem" : "k_EMsgGCNameItem"}`, null, null, buf);
+	sendGCMessage(`EGCItemMsg.${typeof targetItemID === "number" ? "k_EMsgGCNameBaseItem" : "k_EMsgGCNameItem"}`, "CMsgModifyItemStringAttr", {}, {
+		tool_item_id: nameTagID.toString(),
+		subject_item_id: (typeof targetItemID === "number" ? BigInt(targetItemID) | 0xF000000000000000n : targetItemID).toString(),
+		attr_value: utf8Name
+	});
 
 	// We do it the lazy way and just request our inventory again
 	gcConnectInterval = setInterval(sendGCHello, 1000).unref();

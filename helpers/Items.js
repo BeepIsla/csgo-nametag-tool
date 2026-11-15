@@ -58,6 +58,8 @@ let defaultItems = itemsGame.items.reduce((prev, cur) => {
 export { defaultItems };
 export { english };
 export class Items {
+	static CAttribute_String = null;
+
 	constructor(items) {
 		this._items = items;
 	}
@@ -72,6 +74,15 @@ export class Items {
 		});
 	}
 
+	isNameTag(id) {
+		let item = this.getItem(id);
+		if (!item) {
+			return false;
+		}
+
+		return item.def_index === 1200;
+	}
+
 	isItemStorageUnit(id) {
 		let item = this.getItem(id);
 		if (!item) {
@@ -79,6 +90,39 @@ export class Items {
 		}
 
 		return item.def_index === 1201;
+	}
+
+	isPet(id) {
+		let item = this.getItem(id);
+		if (!item) {
+			return false;
+		}
+
+		return item.def_index === 4681;
+	}
+
+	canNameForFree(id) {
+		return this.isItemStorageUnit(id) || this.isPet(id);
+	}
+
+	getCustomName(id) {
+		const item = this.getItem(id);
+		if (!item) {
+			return null;
+		}
+
+		// Priority order:
+		// 329: custom name attr 3
+		// 328: custom name attr 2
+		// 111: custom name attr
+		for (const attributeID of [329, 328, 111]) {
+			const attrib = item.attribute?.find(a => a.def_index == attributeID);
+			if (attrib) {
+				return Items.CAttribute_String.toObject(Items.CAttribute_String.decode(attrib.value_bytes)).value;
+			}
+		}
+
+		return null;
 	}
 
 	getNameTagID() {
