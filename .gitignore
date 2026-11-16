@@ -1,3 +1,6 @@
 node_modules
 .vs*
-test*
+build
+dist
+bin/**
+private

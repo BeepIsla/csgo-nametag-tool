@@ -1,19 +1,38 @@
 {
-  "name": "csgo-nametag",
-  "version": "1.0.0",
-  "description": "Custom name tags without the client limitations",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "BeepIsla",
-  "license": "MIT",
-  "dependencies": {
-    "inquirer": "^13.4.2",
-    "protobufjs": "^8.0.1",
-    "steam-user": "^5.3.0",
-    "vdf-parser": "^1.2.0"
-  }
+	"name": "csgo-nametag-tool",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"format": "biome check --write",
+		"check": "biome check",
+		"build": "vite build",
+		"start": "node ./dist/index.js",
+		"package:windows": "node --build-sea sea-config.windows.json",
+		"package:linux": "node --build-sea sea-config.linux.json"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devEngines": {
+		"packageManager": {
+			"name": "pnpm",
+			"version": "12.21.0",
+			"onFail": "download"
+		}
+	},
+	"packageManager": "pnpm@12.21.0",
+	"type": "module",
+	"devDependencies": {
+		"@biomejs/biome": "2.6.7",
+		"@types/node": "^26.6.6",
+		"ts-proto": "^2.20.0",
+		"typescript": "^7.0.2",
+		"vite": "^8.3.8"
+	},
+	"dependencies": {
+		"@bufbuild/protobuf": "^2.17.0",
+		"@inquirer/prompts": "^8.8.0",
+		"chalk": "^6.0.1"
+	}
 }

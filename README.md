@@ -1,66 +1,76 @@
 # CS2 Name Tag Tool
 
-Rename items without the usual client-side limitations because I am seeing people buy items like this for stupid prices when they are just worth 1.99 USD.
+Rename items without the usual client-side limitations. Allows for unicode characters and more.
 
-## Why? How? What?
-
-Just watch this video: https://www.youtube.com/watch?v=ekPZvM6v764
-
-Its a random guy talking about it to ohnePixel, I thought it was dumb and nothing special so made this.
+**Always test with a [Storage Unit](https://steamcommunity.com/sharedfiles/filedetails/?id=2233851619) first, you can rename them for free infinitely!**
 
 ## Usage
 
-1. Download [NodeJS](https://nodejs.org/) and install/update it (**Version 24.0.0 or higher**)
-2. Download [Git](https://git-scm.com/) and install it
-3. Open a command prompt and enter `git clone https://github.com/BeepIsla/csgo-nametag-tool.git --recursive`
-4. Enter the just downloaded folder using `cd csgo-nametag-tool`
-5. Download the required dependencies using `npm ci`
-6. **Close CS and close Steam**
-7. Run the program using `node index.js`
-8. Follow the on-screen instructions
-9. Start Steam/CS again and enjoy your new name tag
-     - You can use the Steam inventory on your web browser to check if it worked without constantly starting and stopping Steam.
+**Windows & Linux Only**
 
-## Details
+1. Download the latest version: https://github.com/BeepIsla/csgo-nametag-tool/releases/latest
+2. Open Counter-Strike 2
+3. Run `csgo-nametag-tool.exe`
+4. Follow the on-screen instructions
 
-**Always test with a [Storage Unit](https://counterstrike.fandom.com/wiki/Storage_Unit) first, you can rename them for free infinitely! I am not responsible for any lost name tags or reduced item value.**
+On Windows you might encounter the "Microsoft Defener SmartScreen", this is because the application is not digitally signed. Either click "Run anyway" or build the project yourself (See [Github Workflow](./.github/workflows/build.yml)).
 
-When you start the program you can choose two options:
+## Detailed Instructions
 
-- `Default Item`: Default stock items such as a default AK-47 (Requires a name tag)
-- `Normal Item`: Any item you can see in your [Steam Inventory](https://steamcommunity.com/my/inventory/) (Requires a name tag unless its a [Storage Unit](https://counterstrike.fandom.com/wiki/Storage_Unit))
-  - When entering the Steam inventory link for the item you want to rename go to [your Steam inventory]([https://steam](https://steamcommunity.com/my/inventory/)), find the item you want to rename, then right click -> Copy link address. You should now have a link similar to this: `/inventory/#730_2_4287161377`
+<details>
+	<summary>Basic Test</summary>
 
-If you wish to rename your items with special characters I recommend you use the `File` input method. When using the `File` input method a new file will be created called `new_name.txt`, open it in a text editor and write what you want. When you are done save it and press Enter in the console.
+Use this for making sure everything works. It does not support new line characters and most special characters.
 
-Note: When using the `File` input method some things are automatically removed or replaced. The `\r` character gets entirely deleted. All `\n` (New line characters) get replaced with whatever this means `E2 80 A9` but it has the same effect as `\n`.
+### 1. Select "List Storage Units"
 
-For example entering this:
+![](./images/mainmenu.png)
 
-```
+### 2. Copy the ItemID of the storage unit you want to test with
 
+![](./images/list_storageunits.png)
 
+### 3. Select "Rename" and input the storage unit ItemID
 
+![](./images/itemid_input.png)
 
+### 4. Select "Text Input"
 
+![](./images/input_method.png)
 
+### 4. Write anything you want and wait for completion
 
+![](./images/rename_complete.png)
 
+</details>
 
-₿ ⛏
+<details>
+	<summary>Using a file</summary>
 
+Use this if you want to rename an item to something special, supports new lines and any unicode character.
 
+### 1. Copy the Steam inventory link by right clicking
 
+![](./images/copy_steam_link.png)
 
+### 2. Select "Rename" and input the link
 
+![](./images/steam_link_input.png)
 
+### 4. Create a new file next to the executable
 
+![](./images/create_input_file.png)
 
+### 5. Input any text you want and save it
 
-```
+![](./images/input_name_in_file.png)
 
-Results in this:
+### 6. Select "File (Path)" input and enter the file name
 
-![](https://i.imgur.com/FV4ylYa.png)
+![](./images/rename_complete_2.png)
 
-![](https://i.imgur.com/lzMRXLF.png)
+### 7. Check in-game
+
+![](./images/rename_ingame.png)
+
+</details>

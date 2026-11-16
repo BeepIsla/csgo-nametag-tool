@@ -1,0 +1,125 @@
+name: Build
+
+on:
+    push:
+        tags: ["v*"]
+    pull_request:
+    workflow_dispatch:
+
+jobs:
+    build:
+        name: Build (${{ matrix.os }})
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - os: ubuntu-latest
+                      artifact-name: csgo-nametag-tool-linux
+                      cmake-args: "-DCMAKE_CXX_FLAGS=--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/14 -DCMAKE_BUILD_RPATH=$ORIGIN"
+                      sea-config: sea-config.linux.json
+                    - os: windows-latest
+                      artifact-name: csgo-nametag-tool-windows
+                      cmake-args: "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+                      sea-config: sea-config.windows.json
+
+        steps:
+            - name: Checkout repository recursively
+              uses: actions/checkout@v7
+              with:
+                  submodules: recursive
+                  fetch-depth: 0
+
+            - name: Install dependencies (Linux)
+              if: runner.os == 'Linux'
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y clang ninja-build g++-14 libstdc++-14-dev
+
+            - name: Setup MSVC environment (Windows)
+              if: runner.os == 'Windows'
+              uses: ilammy/msvc-dev-cmd@v1
+              with:
+                  arch: x64
+
+            - name: Setup ccache
+              uses: hendrikmuhs/ccache-action@v1.2
+              with:
+                  key: ${{ matrix.os }}-release
+                  max-size: 2G
+
+            - name: Configure CMake (Release)
+              working-directory: extension
+              run: cmake --preset release -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ matrix.cmake-args }}
+
+            - name: Build extension (Release)
+              working-directory: extension
+              run: cmake --build --preset release
+
+            - name: Show ccache stats
+              run: ccache -s
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: 26
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Check code formatting and linting
+              run: pnpm run check
+
+            - name: Build Node app
+              run: pnpm run build
+
+            - name: Package single executable
+              shell: bash
+              run: |
+                  node --build-sea ${{ matrix.sea-config }}
+                  if [ "${{ runner.os }}" = "Linux" ]; then
+                    chmod +x bin/csgo-nametag-tool
+                  fi
+
+            - name: Upload build artifacts
+              uses: actions/upload-artifact@v7
+              with:
+                  name: ${{ matrix.artifact-name }}
+                  path: bin/
+                  if-no-files-found: error
+
+    release:
+        name: Create Release
+        needs: build
+        if: github.ref_type == 'tag'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+
+        steps:
+            - name: Download artifacts
+              uses: actions/download-artifact@v8
+              with:
+                  path: release-assets
+
+            - name: Package release archives
+              run: |
+                  # Linux archive
+                  cd release-assets/csgo-nametag-tool-linux
+                  chmod +x csgo-nametag-tool
+                  tar -czvf ../csgo-nametag-tool-linux.tar.gz *
+                  # Windows archive
+                  cd ../csgo-nametag-tool-windows
+                  zip -r ../csgo-nametag-tool-windows.zip *
+
+            - name: Release
+              uses: softprops/action-gh-release@v3
+              with:
+                  fail_on_unmatched_files: true
+                  files: |
+                      release-assets/*.tar.gz
+                      release-assets/*.zip

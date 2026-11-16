@@ -1,0 +1,13 @@
+{
+	"main": "dist/index.js",
+	"mainFormat": "module",
+	"output": "./bin/csgo-nametag-tool",
+	"disableExperimentalSEAWarning": true,
+	"useSnapshot": false,
+	"useCodeCache": false,
+	"execArgv": ["--disable-warning=ExperimentalWarning"],
+	"execArgvExtension": "none",
+	"assets": {
+		"csgo-nametag-tool-extension.so": "./extension/build/release/csgo-nametag-tool-extension.so"
+	}
+}
