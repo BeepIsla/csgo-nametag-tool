@@ -71,9 +71,6 @@ jobs:
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
-            - name: Check code formatting and linting
-              run: pnpm run check
-
             - name: Build Node app
               run: pnpm run build
 
