@@ -15,12 +15,21 @@ Rename items without the usual client-side limitations. Allows for unicode chara
 
 On Windows you might encounter the "Microsoft Defener SmartScreen", this is because the application is not digitally signed. Either click "Run anyway" or build the project yourself (See [Github Workflow](./.github/workflows/build.yml)).
 
+## Unicode & Formatting
+
+Unicode code points are automatically unescaped:
+
+- `\u{200F}`: Right-to-left mark
+- `\u{2029}`: Paragraph separator (Same visual effect as a new line)
+- `\n`: Automatically replaced with the above paragraph separator
+- Example: `m\u{2029}e\u{2029}o\u{2029}w` puts each letter on its own line
+
+Both standard notation (`\uXXXX`, including surrogate pairs) and braced code point notation (`\u{...}`) are supported. You can look up characters on [Unicode Explorer](https://unicode-explorer.com). Note that Panorama does not support all Unicode characters, unsupported ones will appear blank.
+
 ## Detailed Instructions
 
 <details>
 	<summary>Basic Test</summary>
-
-Use this for making sure everything works. It does not support new line characters and most special characters.
 
 ### 1. Select "List Storage Units"
 
@@ -46,8 +55,6 @@ Use this for making sure everything works. It does not support new line characte
 
 <details>
 	<summary>Using a file</summary>
-
-Use this if you want to rename an item to something special, supports new lines and any unicode character.
 
 ### 1. Copy the Steam inventory link by right clicking
 

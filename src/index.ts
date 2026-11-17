@@ -12,7 +12,7 @@ import {
 	setGracefulInquirerPromptExitHandler,
 } from "./helpers/GracefulInquirerPrompt.js";
 import { ParseItemID } from "./helpers/ParseItemID.js";
-import { replaceAllBuffer } from "./helpers/ReplaceAllBuffer.js";
+import { unescapeUnicode } from "./helpers/UnescapeUnicode.js";
 import { CMsgModifyItemStringAttr } from "./protobufs/csgo/base_gcmessages.js";
 import { EGCItemMsg } from "./protobufs/csgo/econ_gcmessages.js";
 
@@ -285,7 +285,30 @@ async function renameItem(
 		return;
 	}
 
-	let newName = Buffer.alloc(0);
+	console.log("Unicode codepoints are automatically unescaped:");
+	console.log(
+		"- '\\u{200F}' => Right-to-left mark unicode character https://unicode-explorer.com/c/200F",
+	);
+	console.log(
+		"- '\\u{2029}' => Paragraph separator unicode character https://unicode-explorer.com/c/2029",
+	);
+	console.log(
+		"- 'm\\u{2029}e\\u{2029}o\\u{2029}w' => 'meow' with each character on its own line",
+	);
+	console.log(
+		"- '\\uD83D\\uDE00' => '\uD83D\uDE00' (Panorama does not display this correctly, just an example)",
+	);
+	console.log(
+		"You can use https://unicode-explorer.com for a list of unicode characters and their codepoint",
+	);
+	console.log(
+		"Panorama may not display all unicode correctly, the ones that don't work will be invisible",
+	);
+	console.log(
+		"For convenience all new line characters (Including typing '\\n') are automatically replaced with paragraph separators, which has the same visual effect of creating a new line",
+	);
+
+	let newName = "";
 	switch (choice) {
 		case "text_input": {
 			const text = await gracefulInquirerPrompt(
@@ -307,7 +330,7 @@ async function renameItem(
 				return;
 			}
 
-			newName = Buffer.from(text, "utf8");
+			newName = text;
 			break;
 		}
 		case "file_editor": {
@@ -343,7 +366,7 @@ async function renameItem(
 				return;
 			}
 
-			newName = Buffer.from(text, "utf8");
+			newName = text;
 			break;
 		}
 		case "file_path": {
@@ -377,28 +400,32 @@ async function renameItem(
 				return;
 			}
 
-			newName = await readFile(path);
+			newName = await readFile(path, "utf8");
 			break;
 		}
 	}
 
-	// Replace \r with nothing
-	newName = replaceAllBuffer(
-		newName,
-		Buffer.from("\r", "utf8"),
-		Buffer.alloc(0),
-	);
+	try {
+		// Unescape unicode
+		newName = unescapeUnicode(newName);
 
-	// Replace \n with the paragraph separator
-	newName = replaceAllBuffer(
-		newName,
-		Buffer.from("\n", "utf8"),
-		Buffer.from("E280A9", "hex"),
-	);
+		// Replace \r with nothing
+		newName = newName.replaceAll("\r", "");
+		newName = newName.replaceAll("\\r", "");
 
-	const utf8Name = newName.toString("utf8");
-	if (utf8Name.length > 20) {
-		console.log(`WARNING: Your name might be too long! ${utf8Name.length}/20`);
+		// Replace \n with the paragraph separator
+		newName = newName.replaceAll("\\n", "\u{2029}");
+		newName = newName.replaceAll("\n", "\u{2029}");
+	} catch (err) {
+		console.log(`Failed to unescape unicode: ${err}`);
+		return;
+	}
+
+	const newNameLength = Buffer.byteLength(newName, "utf8");
+	if (newNameLength > 20) {
+		console.log(
+			`WARNING: Your name might be too long! (${newNameLength}/20 bytes | ${newName.length} characters)`,
+		);
 	}
 
 	// We warn for everything except Storage Units
@@ -443,7 +470,7 @@ async function renameItem(
 			tool_item_id: nameTagID,
 			subject_item_id:
 				typeof id === "bigint" ? id : BigInt(id) | 0xf000000000000000n,
-			attr_value: utf8Name,
+			attr_value: newName,
 		},
 	);
 
