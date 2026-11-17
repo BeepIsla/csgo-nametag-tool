@@ -3,4 +3,5 @@ node_modules
 build
 dist
 bin/**
+!**/.gitkeep
 private
