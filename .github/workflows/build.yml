@@ -44,6 +44,13 @@ jobs:
               with:
                   arch: x64
 
+            - name: Use Visual Studio LLVM toolchain (Windows)
+              if: runner.os == 'Windows'
+              run: |
+                  if ($env:llvmX64 -and (Test-Path $env:llvmX64)) {
+                    Add-Content -Path $env:GITHUB_PATH -Value $env:llvmX64
+                  }
+
             - name: Setup ccache
               uses: hendrikmuhs/ccache-action@v1.2
               with:
