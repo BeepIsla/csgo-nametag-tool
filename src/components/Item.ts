@@ -77,7 +77,7 @@ export class Item {
 		}
 
 		// Some items cannot be renamed, like a name tag or a case, I am not going to manually filter out everything
-		return false;
+		return true;
 	}
 
 	get requiresNameTag(): boolean {
